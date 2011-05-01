@@ -14,4 +14,7 @@ HEADERS += dispatcher.h \
     singleManager.h \
     stuConnectionConfig.h \
     singleHandler.h
+INCLUDEPATH += ../
+LIBS += -L../lib/ \
+    -lfreeHttpTunnelCommon
 DESTDIR = ../bin/

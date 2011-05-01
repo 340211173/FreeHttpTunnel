@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include "stuConnectionConfig.h"
+#include "freeHttpTunnelCommon/clsHttpHelper.h"
 
 class singlehandler : public QObject
 {
@@ -14,14 +15,17 @@ public:
 public:
     void sayGoodBye();
 private:
+    bool isclientwaiting;
     int id;
     stucConneectionConfig connectionconfig;
     void logOutput(QString msg);
 
     QTcpSocket *internalTcpSocket;
     QTcpSocket *externalTcpSocket;
-    QByteArray internalBuffer;
-    QByteArray externalBuffer;
+//    QByteArray internalBuffer;
+    clsHttpHelper internalBuffer;
+//    QByteArray externalBuffer;
+    clsHttpHelper externalBuffer;
 
 public slots:
     void dataFromInternal();
@@ -29,6 +33,7 @@ public slots:
 
     void internalDiscounnected();
     void externalDiscounnected();
+    void slotHandleHttpError(QString msg);
 };
 
 #endif // SINGLEHANDLER_H

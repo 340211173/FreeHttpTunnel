@@ -34,46 +34,56 @@ singlehandler::singlehandler(int socketdiscriptor,int id, stucConneectionConfig 
     this->connect(this->internalTcpSocket,SIGNAL(readyRead()),this,SLOT(dataFromInternal()));
     this->connect(this->externalTcpSocket,SIGNAL(readyRead()),this,SLOT(dataFromExternal()));
     //    this->logOutput("disccount signal/slot Connected.");
-}
-
-void singlehandler::dataFromInternal()
-{
-    //    qDebug()<<"dataFromInternal"<<"this->thread()"<<this->thread();
-    //    qDebug()<<"dataFromInternal"<<"this->parent()"<<this->parent();
-    //    qDebug()<<"dataFromInternal"<<"QThread::currentThread ()"<<QThread::currentThread ();
-    QByteArray sendtoExternal;
-    this->internalBuffer.append(this->internalTcpSocket->readAll());
-    this->logOutput("Data From Internal");
-    //do som e proccess on data
-    //if needed
-    if(true)
-    {
-        //deque som data from buffer and que tosend buffer
-        sendtoExternal.append(this->internalBuffer);
-        this->internalBuffer.clear();
-
-        this->externalTcpSocket->write(sendtoExternal);
-    }
+    this->connect(&this->internalBuffer,SIGNAL(sigError(QString)),this,SLOT(slotHandleHttpError(QString)));
 }
 
 void singlehandler::dataFromExternal()
 {
+    //    qDebug()<<"dataFromInternal"<<"this->thread()"<<this->thread();
+    //    qDebug()<<"dataFromInternal"<<"this->parent()"<<this->parent();
+    //    qDebug()<<"dataFromInternal"<<"QThread::currentThread ()"<<QThread::currentThread ();
+
+    this->externalBuffer.append(this->externalTcpSocket->readAll());
+    this->logOutput("Data From External");
+    //do some proccess on data
+
+    //if needed
+    //scenario changed, just append the data, whenever user request i will send him a response!
+    //this->externalTcpSocket->write(this->internalBuffer.getByResponseHeader());
+    //scenario chaned again, i wil send him if he is realy waiting for me :-x
+
+    if(this->isclientwaiting || 1)
+    {
+
+        QByteArray temp = this->externalBuffer.getByResponseHeader();
+
+        this->internalTcpSocket->write(temp);
+        this->internalTcpSocket->waitForBytesWritten();
+        this->logOutput(QString("in external sent %1").arg(temp.size()));
+        this->isclientwaiting = 0;
+    }
+}
+
+void singlehandler::dataFromInternal()
+{
     //    qDebug()<<"dataFromExternal"<<"this->thread()"<<this->thread();
     //    qDebug()<<"dataFromExternal"<<"this->parent()"<<this->parent();
     //    qDebug()<<"dataFromExternal"<<"QThread::currentThread()"<<QThread::currentThread();
-    QByteArray sendtoInternal;
-    this->externalBuffer.append(this->externalTcpSocket->readAll());
-    this->logOutput("Data From Extrnal");
+    this->internalBuffer.append(this->internalTcpSocket->readAll());
+    this->logOutput("Data From Internal");
     //do some proccess on data
     //if needed
-    if(true)
-    {
-        //deque som data from buffer and que tosend buffer
-        sendtoInternal.append(this->externalBuffer);
-        this->externalBuffer.clear();
+    //deque som data from buffer and que tosend buffer
 
-        this->internalTcpSocket->write(sendtoInternal);
+    QByteArray temp = this->internalBuffer.getAfterRemoveHeader();
+    this->logOutput(QString("net income : %1").arg(temp.size()));
+    if(temp.size() > 0)
+    {
+        this->isclientwaiting = 1;
     }
+    this->externalTcpSocket->write(temp);
+    this->externalTcpSocket->waitForBytesWritten();
+    this->logOutput(QString("in internal  sent %1").arg(temp.size()));
 }
 
 void singlehandler::externalDiscounnected()
@@ -94,25 +104,32 @@ void singlehandler::logOutput(QString msg)
 }
 
 
-
 void singlehandler::sayGoodBye()
 {
     this->logOutput("Say Good Bye.");
-    if(this->internalTcpSocket->state() == QTcpSocket::ConnectedState)
+/*    if(this->internalTcpSocket->state() == QTcpSocket::ConnectedState)
     {
         this->internalTcpSocket->disconnectFromHost();
-        if(this->internalTcpSocket->state() == QTcpSocket::ConnectedState)
-            this->internalTcpSocket->waitForDisconnected();
     }
+    if(this->internalTcpSocket->state() != QTcpSocket::UnconnectedState)
+        this->internalTcpSocket->waitForDisconnected();
 
     if(this->externalTcpSocket->state() == QTcpSocket::ConnectedState)
     {
         this->externalTcpSocket->disconnectFromHost();
-        if(this->externalTcpSocket->state() == QTcpSocket::ConnectedState)
-            this->externalTcpSocket->waitForDisconnected();
     }
-    this->connect(this->internalTcpSocket,SIGNAL(readyRead()),this,SLOT(dataFromInternal()));
-    this->connect(this->externalTcpSocket,SIGNAL(readyRead()),this,SLOT(dataFromExternal()));
+
+    if(this->externalTcpSocket->state() != QTcpSocket::UnconnectedState)
+        this->externalTcpSocket->waitForDisconnected();
+//    this->connect(this->internalTcpSocket,SIGNAL(readyRead()),this,SLOT(dataFromInternal()));
+//    this->connect(this->externalTcpSocket,SIGNAL(readyRead()),this,SLOT(dataFromExternal()));
     this->logOutput("GoodBye");
-    this->thread()->quit();
+//    this->thread()->quit();
+    */
+}
+
+
+void singlehandler::slotHandleHttpError(QString msg)
+{
+    this->logOutput(QString("HttpError: ").append(msg));
 }

@@ -10,12 +10,15 @@ public:
     explicit clsHttpHelper(QObject *parent = 0);
 
 signals:
-
+    void sigError(QString msg);
 public slots:
 
 private:
-QByteArray buffer;
+    QByteArray buffer;
     QString generateUrl();
+    int state;//0=header not completed yet, 1=header completed
+    int  remainingcontenttosend;//:D
+    void logOutput(QString msg);
 public:
     QByteArray getByRequestHeader(QString domain);
     QByteArray getByResponseHeader();
