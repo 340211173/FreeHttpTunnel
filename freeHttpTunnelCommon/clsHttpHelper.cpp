@@ -8,7 +8,7 @@ clsHttpHelper::clsHttpHelper(QObject *parent) :
 
 }
 
-QByteArray clsHttpHelper::getByRequestHeader(QString domain){
+QByteArray clsHttpHelper::getByRequestPostHeader(QString domain){
 
     //add HTTP Header
     QByteArray endline;
@@ -51,6 +51,44 @@ QByteArray clsHttpHelper::getByRequestHeader(QString domain){
     this->buffer.clear();
     return result;
 }
+
+QByteArray clsHttpHelper::getByRequestGetHeader(QString domain){
+
+    //add HTTP Header
+    QByteArray endline;
+    endline.append(13);
+    endline.append(10);
+    QByteArray header;
+
+    header.append("GET ");
+    header.append(this->generateUrl());
+    header.append(" HTTP/1.1");
+    header.append(endline);
+
+    header.append("Host: ");
+    header.append(domain);
+    header.append(endline);
+
+    header.append("Keep-Alive: 115");
+    header.append(endline);
+
+    header.append("Proxy-Connection: keep-alive");
+    header.append(endline);
+
+    header.append("Pragma: no-cache");
+    header.append(endline);
+
+    header.append("Cache-Control: no-cache");
+    header.append(endline);
+
+    header.append(endline);
+
+    QByteArray result;
+    result.append(header);
+    return result;
+}
+
+
 
 QByteArray clsHttpHelper::getByResponseHeader(){
     //add HTTP Header
@@ -109,7 +147,7 @@ QByteArray clsHttpHelper::getAfterRemoveHeader(){
         this->logOutput(QString().number(this->buffer.size()));
         if(taheheader>0)
         {
-            this->logOutput("afterremove: taheheader>0");
+            this->logOutput(QString("afterremove: taheheader: %1 ").arg(taheheader));
             //header completed,
             //how much data should i recieve
 
@@ -121,6 +159,7 @@ QByteArray clsHttpHelper::getAfterRemoveHeader(){
             int startlength = alt.indexOf(findstring);
             if(startlength < 0)//this is error header completed but there is no content-length!
             {
+                this->logOutput("No Content Length");
                 emit this->sigError("No Content-Length");
             }else
             {
@@ -135,8 +174,9 @@ QByteArray clsHttpHelper::getAfterRemoveHeader(){
                     this->logOutput("afterremove: length finded");
                     //convert to string
                     bool ok;
-                    QString num =alt.mid(startnumber,endnumber);
-                    int length = num.trimmed().toInt(&ok);
+                    QString num =buffer.mid(startnumber,endnumber - startnumber);
+                    num = num.trimmed();
+                    int length = num.toInt(&ok);
                     this->logOutput(QString("Length is %1, original is %2, start is %3, end is %4").arg(length).arg(num).arg(startnumber).arg(endnumber));
                     if(ok)
                     {
@@ -147,7 +187,8 @@ QByteArray clsHttpHelper::getAfterRemoveHeader(){
                         this->remainingcontenttosend = length;
                     }else//error
                     {
-                        emit this->sigError(QString("bad value in Content-Length ").append(alt.mid(startnumber,endnumber)));
+                        this->logOutput(QString("bad value in Content-Length ").append(num));
+                        emit this->sigError(QString("bad value in Content-Length ").append(num));
                     }
                 }
             }
@@ -188,4 +229,37 @@ QString clsHttpHelper::generateUrl()
 void  clsHttpHelper::logOutput(QString msg)
 {
     qDebug()<<"clsHttpHelper"<<msg;
+}
+
+
+bool clsHttpHelper::getAfterRemoveGetHeader(){
+    QByteArray endline;
+    endline.append(13);
+    endline.append(10);
+    QByteArray endlineendline;
+    endlineendline.append(endline);
+    endlineendline.append(endline);
+
+    if(this->state == 0)
+    {
+        this->logOutput("afterremove: state is 0");
+        //if header is complete
+        int taheheader = this->buffer.indexOf(endlineendline);
+        this->logOutput(QString().number(this->buffer.size()));
+        if(taheheader>0)
+        {
+            this->logOutput("afterremove: taheheader>0");
+            //header completed,
+            if(this->buffer.startsWith("GET"))
+            {
+                this->buffer.remove(0,taheheader+4);
+                return true;
+            }
+        }else
+        {
+            this->logOutput("afterremove: header not finded.");
+        }
+    }
+
+    return false;
 }

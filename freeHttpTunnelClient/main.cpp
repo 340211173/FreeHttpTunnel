@@ -1,18 +1,18 @@
 #include <QtCore/QCoreApplication>
-#include "stuConnectionConfig.h"
-#include "dispatcher.h"
+#include "clsClientDispatcher.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    int port = 8811;
-    stucConneectionConfig connectionconfig;
-    connectionconfig.address = "127.0.0.1";
-    connectionconfig.port=8888;
+    int listenPort = 8811;
 
-    dispatcher *dis =  new dispatcher(connectionconfig);
-    int reslisten = dis->listen(QHostAddress::Any,port);
+
+    QHostAddress forwardHost =QHostAddress ("127.0.0.1");
+    int forwardPort = 8888;
+
+    clsClientDispatcher  *dis =  new clsClientDispatcher(forwardHost ,forwardPort);
+    int reslisten = dis->listen(QHostAddress::Any,listenPort );
 
     if(!reslisten)
     {

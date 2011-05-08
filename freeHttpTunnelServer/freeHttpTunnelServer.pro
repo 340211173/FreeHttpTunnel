@@ -8,13 +8,11 @@ CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = app
 SOURCES += main.cpp \
-    dispatcher.cpp \
-    singleManager.cpp \
-    singleHandler.cpp
-HEADERS += dispatcher.h \
-    singleManager.h \
-    stuConnectionConfig.h \
-    singleHandler.h
+    clsServerHandler.cpp \
+    clsServerDistpacher.cpp
+HEADERS += stuConnectionConfig.h \
+    clsServerHandler.h \
+    clsServerDistpacher.h
 INCLUDEPATH += ../
 LIBS += -L../lib/ \
     -lfreeHttpTunnelCommon

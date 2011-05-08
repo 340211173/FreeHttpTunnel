@@ -7,9 +7,7 @@ TARGET = freeHttpTunnelCommon
 CONFIG += console
 CONFIG -= app_bundle
 TEMPLATE = lib
-SOURCES += \ 
-    clsHttpHelper.cpp
-HEADERS += \ 
-    clsHttpHelper.h
+SOURCES += clsHttpHelper.cpp
+HEADERS += clsHttpHelper.h
 OTHER_FILES += 
 DESTDIR = ../lib/

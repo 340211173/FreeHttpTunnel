@@ -20,10 +20,12 @@ private:
     int  remainingcontenttosend;//:D
     void logOutput(QString msg);
 public:
-    QByteArray getByRequestHeader(QString domain);
+    QByteArray getByRequestGetHeader(QString domain);
+    QByteArray getByRequestPostHeader(QString domain);
     QByteArray getByResponseHeader();
     QBool hasAny();
     QByteArray getAfterRemoveHeader();
+    bool getAfterRemoveGetHeader();
     void clear();
     int append(QByteArray);
 };
