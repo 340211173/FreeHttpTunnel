@@ -2,19 +2,20 @@
 #define DISPATCHER_H
 
 #include <QTcpServer>
-#include "stuConnectionConfig.h"
+#include <QHostAddress>
 
-class dispatcher : public QTcpServer
+class clsServerDistpacher : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit dispatcher(stucConneectionConfig connectionconfig,QObject *parent = 0);
+    explicit clsServerDistpacher(QHostAddress _forwardHost,int _forwardPort, QObject *_parent = 0);
 
 protected:
     void incomingConnection(int socketDescriptor);
 private:
     int threadnumber;
-    stucConneectionConfig connectionconfig;
+    QHostAddress forwardHost;
+    int forwardPort;
 private slots:
     void eybaba();
 };

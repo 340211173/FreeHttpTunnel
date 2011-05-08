@@ -26,6 +26,7 @@ private:
     clsHttpHelper externalBuffer;
     QHostAddress forwardHost;
     int forwardPort;
+    bool isPreRequestFinished;
 public slots:
     void dataFromInternal();
     void dataFromExternal();

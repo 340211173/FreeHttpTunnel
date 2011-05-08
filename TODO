@@ -1,1 +1,2 @@
 implement HTTP Protocol
+dar client: do not send new request until the previous finish

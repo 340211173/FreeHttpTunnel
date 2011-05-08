@@ -25,9 +25,12 @@ public:
     QByteArray getByResponseHeader();
     QBool hasAny();
     QByteArray getAfterRemoveHeader();
+    QByteArray getAfterRemoveResponseHeader(bool &_completed);
     bool getAfterRemoveGetHeader();
     void clear();
     int append(QByteArray);
+    bool isEmpty();
+    int size();
 };
 
 #endif // CLSHTTPHELPER_H

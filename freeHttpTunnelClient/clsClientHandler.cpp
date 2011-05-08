@@ -8,6 +8,7 @@ clsClientHandler::clsClientHandler(int _socketdiscriptor,QHostAddress _forwardHo
     this->forwardPort = _forwardPort;
     this->id = _id;
 
+    this->isPreRequestFinished = true;//coz there is no pre request
     this->internalTcpSocket = new QTcpSocket();
 
     this->externalTcpSocket= new QTcpSocket();
@@ -38,16 +39,22 @@ clsClientHandler::clsClientHandler(int _socketdiscriptor,QHostAddress _forwardHo
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(slotGetRestOfIceCream()));
-    timer->start(5000);
+    timer->start(1000);
 
 }
 void clsClientHandler::slotGetRestOfIceCream()
 {
-    this->logOutput("Chocolote Ice Cream");
-    QByteArray temp = this->internalBuffer.getByRequestGetHeader(this->forwardHost.toString());
-    this->externalTcpSocket->write(temp);
-    this->externalTcpSocket->waitForBytesWritten();
-    this->logOutput(QString("written in IceCream %1").arg(temp.size()));
+
+    //if the privous request finished
+    if(this->isPreRequestFinished)
+    {
+        this->logOutput("Chocolote Ice Cream");
+        QByteArray temp = this->internalBuffer.getByRequestGetHeader(this->forwardHost.toString());
+        this->externalTcpSocket->write(temp);
+        this->externalTcpSocket->waitForBytesWritten();
+        this->isPreRequestFinished=false;
+        this->logOutput(QString("written in IceCream to external %1").arg(temp.size()));
+    }
 }
 
 void clsClientHandler::dataFromInternal()
@@ -60,6 +67,7 @@ void clsClientHandler::dataFromInternal()
     //do som e proccess on data
     //if needed
     //deque som data from buffer and que to send buffer
+
     QByteArray temp = this->internalBuffer.getByRequestPostHeader(this->forwardHost.toString());
     this->externalTcpSocket->write(temp);
     this->externalTcpSocket->waitForBytesWritten();
@@ -76,12 +84,13 @@ void clsClientHandler::dataFromExternal()
     //do some proccess on data
     //if needed
     //deque som data from buffer and que tosend buffer
-    QByteArray temp = this->externalBuffer.getAfterRemoveHeader();
+    bool isCompleted=false;
+    QByteArray temp = this->externalBuffer.getAfterRemoveResponseHeader(isCompleted);
+    this->isPreRequestFinished =isCompleted;
     this->internalTcpSocket->write(temp);
     this->internalTcpSocket->waitForBytesWritten();
     this->logOutput(QString("written in External %1").arg(temp.size()));
 }
-
 
 void clsClientHandler::externalDiscounnected()
 {

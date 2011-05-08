@@ -1,5 +1,4 @@
 #include <QtCore/QCoreApplication>
-#include "stuConnectionConfig.h"
 #include "clsServerDistpacher.h"
 
 int main(int argc, char *argv[])

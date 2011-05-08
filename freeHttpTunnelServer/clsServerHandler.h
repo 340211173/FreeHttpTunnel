@@ -3,30 +3,27 @@
 
 #include <QObject>
 #include <QTcpSocket>
-#include "stuConnectionConfig.h"
+#include <QHostAddress>
 #include "freeHttpTunnelCommon/clsHttpHelper.h"
 
-class singlehandler : public QObject
+class clsServerHandler : public QObject
 {
     Q_OBJECT
 public:
-    explicit singlehandler(int socketdiscriptor,int id,stucConneectionConfig connectionconfig,QObject *parent = 0);
-    void run();
+    clsServerHandler(int _socketdiscriptor,QHostAddress _forwardHost,int _forwardPort, int _id,QObject *_parent = 0);
 public:
     void sayGoodBye();
 private:
     bool isclientwaiting;
+protected:
+    QHostAddress forwardHost;
+    int forwardPort;
     int id;
-    stucConneectionConfig connectionconfig;
-    void logOutput(QString msg);
-
     QTcpSocket *internalTcpSocket;
     QTcpSocket *externalTcpSocket;
-//    QByteArray internalBuffer;
+    void logOutput(QString msg);
     clsHttpHelper internalBuffer;
-//    QByteArray externalBuffer;
     clsHttpHelper externalBuffer;
-
 public slots:
     void dataFromInternal();
     void dataFromExternal();
